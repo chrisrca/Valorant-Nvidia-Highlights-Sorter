@@ -82,11 +82,6 @@ def get_coregame_stats():
         GLZ_URL + f"/core-game/v1/matches/{get_coregame_match_id()}", headers=get_headers(), verify=False).json()
     return response
 
-# try:
-#     print(maplist[(mapidlist.index((str(get_coregame_stats()['MapID']).split('/'))[-1]))] + " - " + (datetime.today().strftime('%m') + '∕' + datetime.today().strftime('%d') + '∕' + datetime.today().strftime('%Y') + " " + datetime.today().strftime('%H') + "∶" + datetime.today().strftime('%M')))
-# except:
-#     pass
-
 class Watcher:
     DIRECTORY_TO_WATCH = DIRECTORY
 
@@ -115,6 +110,17 @@ class Handler(FileSystemEventHandler):
             return None
 
         elif event.event_type == 'created':
+            for m in maplist:
+                try:
+                    path = os.path.join(DIRECTORY, m)
+                    os.mkdir(path)
+                except:
+                    pass
+
+                try:
+                    os.mkdir(os.path.join(DIRECTORY, "Menu"))
+                except:
+                    pass
             try:
                 if ('errorCode' in str(get_coregame_stats())):
                     dir = (event.src_path).split('\\')
