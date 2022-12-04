@@ -2,14 +2,18 @@ import base64
 import os
 import requests
 import time
+import shutil
+import urllib3
+import sys
+import tkinter as tk
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-import shutil
 from datetime import datetime 
-import urllib3
+from tkinter import filedialog
+from win32com.client import Dispatch
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-DIRECTORY = "F:\Valorant"
+DIRECTORY = ""
 REGION = "na"
 GLZ_URL = f"https://glz-{REGION}-1.{REGION}.a.pvp.net"
 PD_URL = f"https://pd.{REGION}.a.pvp.net"
@@ -17,20 +21,6 @@ PD_URL = f"https://pd.{REGION}.a.pvp.net"
 mapidlist = ["Ascent", "Duality", "Foxtrot", "Canyon", "Triad", "Port", "Pitt", "Bonsai"]
 maplist = ["Ascent", "Bind", "Breeze", "Fracture", "Haven", "Icebox", "Pearl", "Spilt"]
 headers = {}
-
-
-for m in maplist:
-    try:
-        path = os.path.join(DIRECTORY, m)
-        os.mkdir(path)
-    except:
-        pass
-
-try:
-    os.mkdir(os.path.join(DIRECTORY, "Menu"))
-except:
-    pass
-
 
 def get_lockfile():
     try:
@@ -82,16 +72,64 @@ def get_coregame_stats():
         GLZ_URL + f"/core-game/v1/matches/{get_coregame_match_id()}", headers=get_headers(), verify=False).json()
     return response
 
+if (os.path.exists('path')):
+    f = open("path", "r")
+    DIRECTORY = (f.read())
+    f.close()
+else:
+    root = tk.Tk()
+    root.iconbitmap(str(os.environ['SystemRoot']) + '\explorer.exe')
+    root.withdraw()
+
+    file_path = filedialog.askdirectory()
+
+    write = open("path", "w+")
+    write.write(file_path)
+    write.close()
+    DIRECTORY = file_path
+
+if (DIRECTORY == ''):
+    os.remove("path")
+    quit()
+
+for m in maplist:
+    try:
+        path = os.path.join(DIRECTORY, m)
+        os.mkdir(path)
+    except:
+        pass
+
+try:
+    os.mkdir(os.path.join(DIRECTORY, "Menu"))
+except:
+    pass
+
+startup_path = str(os.getenv('APPDATA') + r"\Microsoft\Windows\Start Menu\Programs\Startup")
+target = sys.executable
+wDir = startup_path
+icon = sys.executable
+shell = Dispatch('WScript.Shell')
+shortcut = shell.CreateShortCut(os.path.join(startup_path, "Valorant Clip Sorter.lnk"))
+shortcut.Targetpath = target
+shortcut.WorkingDirectory = wDir
+shortcut.IconLocation = icon
+shortcut.save()
+
 class Watcher:
     DIRECTORY_TO_WATCH = DIRECTORY
-
     def __init__(self):
         self.observer = Observer()
-
     def run(self):
         event_handler = Handler()
         self.observer.schedule(event_handler, self.DIRECTORY_TO_WATCH, recursive=True)
-        self.observer.start()
+        try:
+            self.observer.start()
+        except:
+            try:
+                os.remove("path")
+            except:
+                pass
+            quit()
         try:
             while True:
                 time.sleep(5)
@@ -103,7 +141,6 @@ class Watcher:
 
 
 class Handler(FileSystemEventHandler):
-
     @staticmethod
     def on_any_event(event):
         if event.is_directory:
