@@ -18,12 +18,19 @@ mapidlist = ["Ascent", "Duality", "Foxtrot", "Canyon", "Triad", "Port", "Pitt", 
 maplist = ["Ascent", "Bind", "Breeze", "Fracture", "Haven", "Icebox", "Pearl", "Spilt"]
 headers = {}
 
-try:
-    for m in maplist:
+
+for m in maplist:
+    try:
         path = os.path.join(DIRECTORY, m)
         os.mkdir(path)
+    except:
+        pass
+
+try:
+    os.mkdir(os.path.join(DIRECTORY, "Menu"))
 except:
     pass
+
 
 def get_lockfile():
     try:
@@ -68,7 +75,6 @@ def get_coregame_match_id():
         match_id = response['MatchID']
         return match_id
     except KeyError:
-        print(f"No match id found. {response}")
         return 0
 
 def get_coregame_stats():
@@ -110,19 +116,34 @@ class Handler(FileSystemEventHandler):
 
         elif event.event_type == 'created':
             try:
-                dir = (event.src_path).split('\\')
-                subdir = ""
-                for i, x in enumerate(dir[:-1]):
-                    if (i != 0):
-                        subdir += "\\" + x
-                    else:
-                        subdir = x
-                subdir += "\\" + maplist[(mapidlist.index((str(get_coregame_stats()['MapID']).split('/'))[-1]))]
-                historicalSize = -1
-                while (historicalSize != os.path.getsize(event.src_path)):
-                    historicalSize = os.path.getsize(event.src_path)
-                    time.sleep(1)
-                shutil.move(event.src_path, (subdir + "\\" + (maplist[(mapidlist.index((str(get_coregame_stats()['MapID']).split('/'))[-1]))] + " - " + (datetime.today().strftime('%m') + '∕' + datetime.today().strftime('%d') + '∕' + datetime.today().strftime('%Y') + " " + datetime.today().strftime('%H') + "∶" + datetime.today().strftime('%M')))) + "∶" + datetime.today().strftime('%S') + '.' + (event.src_path).split('\\')[-1].split('.')[-1])
+                if ('errorCode' in str(get_coregame_stats())):
+                    dir = (event.src_path).split('\\')
+                    subdir = ""
+                    for i, x in enumerate(dir[:-1]):
+                        if (i != 0):
+                            subdir += "\\" + x
+                        else:
+                            subdir = x
+                    subdir += "\\Menu" 
+                    historicalSize = -1
+                    while (historicalSize != os.path.getsize(event.src_path)):
+                        historicalSize = os.path.getsize(event.src_path)
+                        time.sleep(1)
+                    shutil.move(event.src_path, (subdir + "\\" + ("Menu - " + (datetime.today().strftime('%m') + '∕' + datetime.today().strftime('%d') + '∕' + datetime.today().strftime('%Y') + " " + datetime.today().strftime('%H') + "∶" + datetime.today().strftime('%M')))) + "∶" + datetime.today().strftime('%S') + '.' + (event.src_path).split('\\')[-1].split('.')[-1])
+                else:
+                    dir = (event.src_path).split('\\')
+                    subdir = ""
+                    for i, x in enumerate(dir[:-1]):
+                        if (i != 0):
+                            subdir += "\\" + x
+                        else:
+                            subdir = x
+                    subdir += "\\" + maplist[(mapidlist.index((str(get_coregame_stats()['MapID']).split('/'))[-1]))]
+                    historicalSize = -1
+                    while (historicalSize != os.path.getsize(event.src_path)):
+                        historicalSize = os.path.getsize(event.src_path)
+                        time.sleep(1)
+                    shutil.move(event.src_path, (subdir + "\\" + (maplist[(mapidlist.index((str(get_coregame_stats()['MapID']).split('/'))[-1]))] + " - " + (datetime.today().strftime('%m') + '∕' + datetime.today().strftime('%d') + '∕' + datetime.today().strftime('%Y') + " " + datetime.today().strftime('%H') + "∶" + datetime.today().strftime('%M')))) + "∶" + datetime.today().strftime('%S') + '.' + (event.src_path).split('\\')[-1].split('.')[-1])
             except:
                 pass
 
