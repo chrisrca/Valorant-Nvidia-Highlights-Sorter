@@ -13,6 +13,8 @@ from tkinter import filedialog
 from win32com.client import Dispatch
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# pyinstaller --onefile --icon=Icon.ico --noconsole clipsorter.py --hidden-import "watchdog" --hidden-import "datetime" --hidden-import "tkinter" --hidden-import "win32com"
+
 DIRECTORY = ""
 REGION = "na"
 GLZ_URL = f"https://glz-{REGION}-1.{REGION}.a.pvp.net"
@@ -105,8 +107,15 @@ except:
     pass
 
 startup_path = str(os.getenv('APPDATA') + r"\Microsoft\Windows\Start Menu\Programs\Startup")
+dir = (sys.executable).split('\\')
+tmpsubdir = ""
+for i, x in enumerate(dir[:-1]):
+    if (i != 0):
+        tmpsubdir += "\\" + x
+    else:
+        tmpsubdir = x
 target = sys.executable
-wDir = startup_path
+wDir = tmpsubdir
 icon = sys.executable
 shell = Dispatch('WScript.Shell')
 shortcut = shell.CreateShortCut(os.path.join(startup_path, "Valorant Clip Sorter.lnk"))
