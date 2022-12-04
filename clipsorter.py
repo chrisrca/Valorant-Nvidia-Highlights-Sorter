@@ -6,6 +6,8 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import shutil
 from datetime import datetime 
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 DIRECTORY = "F:\Valorant"
 REGION = "na"
@@ -74,6 +76,11 @@ def get_coregame_stats():
         GLZ_URL + f"/core-game/v1/matches/{get_coregame_match_id()}", headers=get_headers(), verify=False).json()
     return response
 
+# try:
+#     print(maplist[(mapidlist.index((str(get_coregame_stats()['MapID']).split('/'))[-1]))] + " - " + (datetime.today().strftime('%m') + '∕' + datetime.today().strftime('%d') + '∕' + datetime.today().strftime('%Y') + " " + datetime.today().strftime('%H') + "∶" + datetime.today().strftime('%M')))
+# except:
+#     pass
+
 class Watcher:
     DIRECTORY_TO_WATCH = DIRECTORY
 
@@ -102,15 +109,22 @@ class Handler(FileSystemEventHandler):
             return None
 
         elif event.event_type == 'created':
-            # Take any action here when a file is first created.
-            # print ("Received created event - %s." % event.src_path)
             try:
-                print((str(get_coregame_stats()['MapID']).split('/'))[-1])
+                dir = (event.src_path).split('\\')
+                subdir = ""
+                for i, x in enumerate(dir[:-1]):
+                    if (i != 0):
+                        subdir += "\\" + x
+                    else:
+                        subdir = x
+                subdir += "\\" + maplist[(mapidlist.index((str(get_coregame_stats()['MapID']).split('/'))[-1]))]
+                historicalSize = -1
+                while (historicalSize != os.path.getsize(event.src_path)):
+                    historicalSize = os.path.getsize(event.src_path)
+                    time.sleep(1)
+                shutil.move(event.src_path, (subdir + "\\" + (maplist[(mapidlist.index((str(get_coregame_stats()['MapID']).split('/'))[-1]))] + " - " + (datetime.today().strftime('%m') + '∕' + datetime.today().strftime('%d') + '∕' + datetime.today().strftime('%Y') + " " + datetime.today().strftime('%H') + "∶" + datetime.today().strftime('%M')))) + "∶" + datetime.today().strftime('%S') + '.' + (event.src_path).split('\\')[-1].split('.')[-1])
             except:
                 pass
-
-            print(datetime.today().strftime('%m') + '∕' + datetime.today().strftime('%d') + '∕' + datetime.today().strftime('%Y') + " " + datetime.today().strftime('%H') + "∶" + datetime.today().strftime('%M'))
-
 
 if __name__ == '__main__':
     w = Watcher()
